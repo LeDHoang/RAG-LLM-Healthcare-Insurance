@@ -1,0 +1,7 @@
+pypdf
+langchain
+streamlit
+openai
+faiss-cpu
+boto3 #aws
+
