@@ -4,4 +4,5 @@ streamlit
 openai
 faiss-cpu
 boto3 #aws
+langchain-community
 
