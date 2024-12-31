@@ -1,19 +1,33 @@
-from flask import Flask, request, jsonify
-import os
-from pdfminer.high_level import extract_text
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.embeddings.amazon_titan import AmazonTitanEmbeddings
-import faiss
+
 import boto3
-import pickle
-
-app = Flask(__name__)
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
+import streamlit as st
+import os
+import uuid 
 # Amazon S3 Configuration
-S3_BUCKET = 'your-s3-bucket-name'
+S3_BUCKET = os.environ.get('BUCKET_NAME')
 s3_client = boto3.client('s3')
+
+#Bedrock Configuration
+from langchain_community.embeddings import BedrockEmbeddings
+
+#Text Splitter | Split into chunks
+from langchain_text_splitter import RecursiveCharacterTextSplitter
+
+#FAISS Configuration
+import faiss
+import numpy as np
+
+#Amazon Titan Configuration
+from langchain_community.embeddings import AmazonTitanEmbeddings
+
+#pdf loader
+from langchain_pdf import PyPDFLoader
+
+#Extract text from pdf
+def extract_text(file_path):
+    loader = PyPDFLoader(file_path)
+    documents = loader.load()
+    return documents
 
 @app.route('/upload', methods=['POST'])
 def upload_pdf():
@@ -50,5 +64,26 @@ def upload_pdf():
     
     return jsonify({'message': 'PDF processed and index uploaded successfully'})
 
+def main():
+    st.title("PDF Upload and Processing")
+    st.write("Upload a PDF file to process it.")
+    uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf"])
+    if uploaded_file is not None:
+        request_id = uuid()
+        st.write(f"Request ID: {request_id}")
+        saved_file_name = f"{request_id}.pdf"
+        #Save the uploaded file to the local directory  
+        with open(saved_file_name, "wb") as w:
+            w.write(uploaded_file.getvalue())
+        #Load the file into a Langchain loader
+        loader = PyPDFLoader(saved_file_name)
+        #Split the file into pages
+        pages = loader.load_and_split()
+        st.write(f"Loaded {len(pages)} pages")
+
+        file_path = os.path.join(UPLOAD_FOLDER, saved_file_name)
+        uploaded_file.save(file_path)
+        st.success("File uploaded successfully")
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    main()
