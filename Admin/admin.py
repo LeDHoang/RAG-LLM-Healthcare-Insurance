@@ -66,7 +66,11 @@ from langchain_community.document_loaders import PyPDFLoader
 # #get the request id
 # def get_request_id():
 #     return str(uuid.uuid4())
-
+#split function
+def split_text(text,chunk_size,chunk_overlap):
+    splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+    chunks = splitter.split_documents(text)
+    return chunks
 def main():
     st.title("PDF Upload and Processing")
     st.write("Upload a PDF file to process it.")
@@ -87,10 +91,15 @@ def main():
         #Split the file into pages
         pages = loader.load_and_split()
         st.write(f"Loaded {len(pages)} pages")
-
-        # file_path = os.path.join(UPLOAD_FOLDER, saved_file_name)
-        # uploaded_file.save(file_path)
-        # st.success("File uploaded successfully")
-
+        #Split the text into chunks using the split_text function
+        chunks = split_text(pages,1000,200)
+        st.write(f"Splitting the text into chunks. Splitted Documents length: {len(chunks)}")
+        st.write("--------------------------------")
+        st.write(chunks[0])
+        st.write("--------------------------------")
+        st.write(chunks[1])
+        st.write("--------------------------------")
+        st.write(chunks[2])
+        st.write("--------------------------------")
 if __name__ == '__main__':
     main()
