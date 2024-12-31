@@ -63,6 +63,9 @@ from langchain_community.document_loaders import PyPDFLoader
 #     s3_client.upload_file(index_file, S3_BUCKET, index_file)
     
 #     return jsonify({'message': 'PDF processed and index uploaded successfully'})
+# #get the request id
+# def get_request_id():
+#     return str(uuid.uuid4())
 
 def main():
     st.title("PDF Upload and Processing")
@@ -71,7 +74,8 @@ def main():
     #Upload the file
     uploaded_file = st.file_uploader("Choose a PDF file", type=["pdf"])
     if uploaded_file is not None:
-        request_id = uuid()
+        #get the request id
+        request_id = str(uuid.uuid4())
         st.write(f"Request ID: {request_id}")
         saved_file_name = f"{request_id}.pdf"
         #Save the uploaded file to the local directory  
