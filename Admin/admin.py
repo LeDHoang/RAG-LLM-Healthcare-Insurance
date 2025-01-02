@@ -14,7 +14,7 @@ from langchain_community.embeddings import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 #FAISS Configuration
-import faiss
+from langchain_community.vectorstores import FAISS
 # import numpy as np
 
 #Amazon Titan Configuration
@@ -67,10 +67,21 @@ from langchain_community.document_loaders import PyPDFLoader
 # def get_request_id():
 #     return str(uuid.uuid4())
 #split function
+bedrock_client = boto3.client("service_name=bedrock-runtime")
+bedrock_embeddings = BedrockEmbeddings(client=bedrock_client)
 def split_text(text,chunk_size,chunk_overlap):
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunks = splitter.split_documents(text)
     return chunks
+def create_vector_store(request_id,chunks):
+    #using FAISS
+    vector_store = FAISS.from_documents(chunks,BedrockEmbeddings())
+    #Create embeddings using Bedrock
+    embeddings = BedrockEmbeddings()
+    #Create a FAISS index
+    index = faiss.IndexFlatL2(embeddings.dimension)
+    index.add(np.array(embeddings))
+    return index
 def main():
     st.title("PDF Upload and Processing")
     st.write("Upload a PDF file to process it.")
@@ -101,5 +112,13 @@ def main():
         st.write("--------------------------------")
         st.write(chunks[2])
         st.write("--------------------------------")
+
+        st.write("Creating vector store")
+        result = create_vector_store(request_id,chunks)
+        st.write(result)
+        if result:
+            st.write("Vector store created successfully")
+        else:
+            st.write("Vector store creation failed")
 if __name__ == '__main__':
     main()
