@@ -23,50 +23,6 @@ from langchain_community.vectorstores import FAISS
 #pdf loader
 from langchain_community.document_loaders import PyPDFLoader
 
-# #Extract text from pdf
-# def extract_text(file_path):
-#     loader = PyPDFLoader(file_path)
-#     documents = loader.load()
-#     return documents
-
-# @app.route('/upload', methods=['POST'])
-# def upload_pdf():
-#     file = request.files.get('file')
-#     if not file:
-#         return jsonify({'error': 'No file uploaded'}), 400
-    
-#     # Save uploaded PDF
-#     file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-#     file.save(file_path)
-    
-#     # Extract text from the PDF
-#     text = extract_text(file_path)
-    
-#     # Split the text into chunks
-#     splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-#     chunks = splitter.split_text(text)
-    
-#     # Create embeddings using Amazon Titan
-#     embedding_model = AmazonTitanEmbeddings()
-#     embeddings = [embedding_model.embed(chunk) for chunk in chunks]
-    
-#     # Create FAISS index
-#     dimension = len(embeddings[0])
-#     faiss_index = faiss.IndexFlatL2(dimension)
-#     faiss_index.add(np.array(embeddings))
-    
-#     # Save the FAISS index locally
-#     index_file = 'vector_index.faiss'
-#     faiss.write_index(faiss_index, index_file)
-    
-#     # Upload the index to S3
-#     s3_client.upload_file(index_file, S3_BUCKET, index_file)
-    
-#     return jsonify({'message': 'PDF processed and index uploaded successfully'})
-# #get the request id
-# def get_request_id():
-#     return str(uuid.uuid4())
-#split function
 bedrock_client = boto3.client("service_name=bedrock-runtime")
 bedrock_embeddings = BedrockEmbeddings(client=bedrock_client)
 def split_text(text,chunk_size,chunk_overlap):
