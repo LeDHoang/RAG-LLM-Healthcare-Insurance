@@ -3,6 +3,13 @@ import boto3
 import streamlit as st
 import os
 import uuid 
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+access_key = os.getenv("AWS_ACCESS_KEY_ID")
+secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+region = os.getenv("AWS_DEFAULT_REGION")
 # Amazon S3 Configuration
 S3_BUCKET = os.getenv('BUCKET_NAME')
 s3_client = boto3.client('s3')
@@ -23,8 +30,11 @@ from langchain_community.vectorstores import FAISS
 #pdf loader
 from langchain_community.document_loaders import PyPDFLoader
 
-bedrock_client = boto3.client("service_name=bedrock-runtime")
-bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v2:0", client=bedrock_client)
+bedrock_client = boto3.client(
+    service_name="bedrock-runtime",
+    region_name="us-east-1"
+                              )
+bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", client=bedrock_client)
 def split_text(text,chunk_size,chunk_overlap):
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunks = splitter.split_documents(text)
@@ -32,13 +42,18 @@ def split_text(text,chunk_size,chunk_overlap):
 #create vector store
 def create_vector_store(request_id,chunks):
     #using FAISS
-    vector_store_faiss = FAISS.from_documents(chunks,BedrockEmbeddings())
-    #Create embeddings using Bedrock
-    embeddings = BedrockEmbeddings()
-    #Create a FAISS index
-    index = faiss.IndexFlatL2(embeddings.dimension)
-    index.add(np.array(embeddings))
-    return index
+    #Using Bedrock Embeddings to create vector index
+    vector_store_faiss = FAISS.from_documents(chunks,bedrock_embeddings)
+    #save the vector store to the local directory
+    #create a folder for the request id then save the vector store to the tmp folder
+    file_name = f"{request_id}.bin"
+    folder_path = "/tmp/"
+    vector_store_faiss.save_local(index_name=file_name, folder_path=folder_path)
+    #upload the file to the S3 bucket
+    s3_client.upload_file(Filename=folder_path + '/' + file_name+'.faiss', Bucket=S3_BUCKET, Key="my_faiss.faiss")
+    s3_client.upload_file(Filename=folder_path + '/' + file_name+'.faiss', Bucket=S3_BUCKET, Key="my_faiss.pkl")
+
+    return True
 
 def main():
     st.title("PDF Upload and Processing")
