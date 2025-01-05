@@ -24,20 +24,22 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import PyPDFLoader
 
 bedrock_client = boto3.client("service_name=bedrock-runtime")
-bedrock_embeddings = BedrockEmbeddings(client=bedrock_client)
+bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v2:0", client=bedrock_client)
 def split_text(text,chunk_size,chunk_overlap):
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunks = splitter.split_documents(text)
     return chunks
+#create vector store
 def create_vector_store(request_id,chunks):
     #using FAISS
-    vector_store = FAISS.from_documents(chunks,BedrockEmbeddings())
+    vector_store_faiss = FAISS.from_documents(chunks,BedrockEmbeddings())
     #Create embeddings using Bedrock
     embeddings = BedrockEmbeddings()
     #Create a FAISS index
     index = faiss.IndexFlatL2(embeddings.dimension)
     index.add(np.array(embeddings))
     return index
+
 def main():
     st.title("PDF Upload and Processing")
     st.write("Upload a PDF file to process it.")
