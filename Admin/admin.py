@@ -104,6 +104,26 @@ def main():
         with open(saved_file_name, mode="wb") as w:
             w.write(uploaded_file.getvalue())
 
+        loader = PyPDFLoader(saved_file_name)
+        pages = loader.load_and_split()
+
+        st.write(f"Total Pages: {len(pages)}")
+
+        ## Split Text
+        splitted_docs = split_text(pages, 1000, 200)
+        st.write(f"Splitted Docs length: {len(splitted_docs)}")
+        st.write("===================")
+        st.write(splitted_docs[0])
+        st.write("===================")
+        st.write(splitted_docs[1])
+
+        st.write("Creating the Vector Store")
+        result = create_vector_store(request_id, splitted_docs)
+
+        if result:
+            st.write("Hurray!! PDF processed successfully")
+        else:
+            st.write("Error!! Please check logs.")
 
 
 
