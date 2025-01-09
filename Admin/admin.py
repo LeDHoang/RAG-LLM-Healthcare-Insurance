@@ -93,5 +93,19 @@ def main():
             st.write("Vector store created successfully")
         else:
             st.write("Vector store creation failed")
+## main method
+def main():
+    st.write("This is Admin Site for Chat with PDF demo")
+    uploaded_file = st.file_uploader("Choose a file", "pdf")
+    if uploaded_file is not None:
+        request_id = get_unique_id()
+        st.write(f"Request Id: {request_id}")
+        saved_file_name = f"{request_id}.pdf"
+        with open(saved_file_name, mode="wb") as w:
+            w.write(uploaded_file.getvalue())
+
+
+
+
 if __name__ == '__main__':
     main()
