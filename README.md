@@ -89,9 +89,26 @@ streamlit run User/app.py --server.port 8502
 
 ## 🧪 Testing Your Setup
 
-### Quick System Test
+### Complete Test Suite
+Run all tests to verify your system is working correctly:
 ```bash
-python test_complete_system.py
+# Run all tests
+./run_tests.sh
+# or
+python3 run_tests.py
+```
+
+### Individual Tests
+Test specific components:
+```bash
+# AWS connectivity
+python3 tests/test_s3_connection.py
+
+# AI model access
+python3 tests/test_bedrock_simple.py
+
+# Complete system integration
+python3 tests/test_complete_system.py
 ```
 
 ### Step-by-Step Testing
@@ -113,13 +130,23 @@ RAG-LLM-Healthcare-Insurance/
 │   └── Dockerfile           # 🐳 Container configuration
 ├── User/
 │   └── app.py               # 💬 Question-answering interface
+├── tests/                   # 🧪 Test suite
+│   ├── test_s3_connection.py     # AWS S3 connectivity test
+│   ├── test_bedrock_simple.py    # Bedrock model access test
+│   ├── test_embedding_regions.py # Regional embedding test
+│   ├── test_nova_converse.py     # Nova Lite conversation test
+│   ├── test_boto3.py            # Boto3 configuration test
+│   ├── test_admin_embedding.py  # Admin interface test
+│   ├── test_user_interface.py   # User interface test
+│   ├── test_complete_system.py  # End-to-end system test
+│   └── README.md                # Test documentation
 ├── pdf-sources/             # 📚 Sample healthcare insurance PDFs
-├── test_complete_system.py  # 🧪 Comprehensive system test
-├── test_nova_converse.py    # 🔧 Nova Lite API test
-├── main.py                  # 🚀 Application entry point
-├── .env                     # 🔐 Environment configuration
-├── .gitignore              # 🚫 Git ignore rules
-└── README.md               # 📖 This file
+├── run_tests.py            # 🏃 Test runner script
+├── run_tests.sh            # 🐚 Shell script for tests
+├── main.py                 # 🚀 Application entry point
+├── .env                    # 🔐 Environment configuration
+├── .gitignore             # 🚫 Git ignore rules
+└── README.md              # 📖 This file
 ```
 
 ## 🔧 Technical Architecture
@@ -169,7 +196,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - Run: `pip install --upgrade boto3`
 
 ### Get Help
-- Check the test scripts: `python test_complete_system.py`
+- Run the test suite: `./run_tests.sh` or `python3 run_tests.py`
+- Check individual test outputs in the `tests/` directory
 - Review AWS CloudWatch logs for detailed error messages
 - Ensure your `.env` file has correct credentials
 
