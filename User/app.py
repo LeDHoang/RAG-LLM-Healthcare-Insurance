@@ -62,6 +62,50 @@ def load_vector_store():
         st.error(f"Failed to load vector store: {str(e)}")
         return None
 
+def _build_context_sections(docs):
+    """Format retrieved docs into numbered sections with source hints for citations."""
+    sections = []
+    for idx, doc in enumerate(docs, start=1):
+        source = doc.metadata.get('source', 'unknown') if hasattr(doc, 'metadata') else 'unknown'
+        page = doc.metadata.get('page', 'unknown') if hasattr(doc, 'metadata') else 'unknown'
+        content = (doc.page_content or '').strip()
+        sections.append(
+            f"[S{idx}]\n{content}\n(Source: {source}, page {page})"
+        )
+    return "\n\n".join(sections)
+
+def _build_converse_messages(question, docs):
+    """Create safety-guided user message for Nova Converse (no system role supported)."""
+    context_text = _build_context_sections(docs)
+
+    system_instructions = (
+        "You are a helpful assistant for healthcare insurance documents. "
+        "Follow these rules strictly: \n"
+        "- Ground every answer ONLY in the provided Context sections.\n"
+        "- If the answer is not in context, say you don't know and suggest checking the policy documents.\n"
+        "- Include inline citations using the section IDs like [S1], [S2] wherever specific facts are used.\n"
+        "- Be concise, neutral, and precise. Avoid speculation or fabrication.\n"
+        "- Do not provide legal, medical, or financial advice. Provide informational guidance only.\n"
+        "- Do not output secrets, credentials, or personal data.\n"
+        "- If the user asks for actions that could cause harm or are outside scope, refuse briefly and provide safer alternatives.\n"
+        "- Prefer bullet lists for multi-part answers.\n"
+    )
+
+    user_prompt = (
+        f"{system_instructions}\n\n"
+        f"Context sections (use for grounding and citations):\n\n"
+        f"{context_text}\n\n"
+        f"Question: {question}\n\n"
+        "Answer with citations like [S1], [S2]. If unknown, say you don't know."
+    )
+
+    return [
+        {
+            "role": "user",
+            "content": [{"text": user_prompt}]
+        }
+    ]
+
 def query_documents(question, vector_store, bedrock_client):
     """Query the documents using RAG"""
     try:
@@ -71,32 +115,17 @@ def query_documents(question, vector_store, bedrock_client):
         if not docs:
             return "No relevant documents found."
         
-        # Combine document content
-        context = "\n\n".join([doc.page_content for doc in docs])
-        
-        # Create prompt for Nova Lite
-        prompt = f"""Based on the following healthcare insurance documents, please answer the question.
+        # Build safety-guided messages for Nova Lite
+        messages = _build_converse_messages(question, docs)
 
-Context:
-{context}
-
-Question: {question}
-
-Answer:"""
-        
         # Use Converse API for Nova Lite
         try:
             response = bedrock_client.converse(
                 modelId="us.amazon.nova-lite-v1:0",
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [{"text": prompt}]
-                    }
-                ],
+                messages=messages,
                 inferenceConfig={
                     "maxTokens": 512,
-                    "temperature": 0.7
+                    "temperature": 0.2
                 }
             )
             
