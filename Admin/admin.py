@@ -35,9 +35,18 @@ bedrock_client = boto3.client(
     region_name=region
 )
 bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v2:0", client=bedrock_client)
-def split_text(text,chunk_size,chunk_overlap):
+def split_text(text, chunk_size, chunk_overlap, original_filename):
+    """Split text into chunks and enrich metadata with original filename"""
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunks = splitter.split_documents(text)
+    
+    # Enrich metadata with original filename
+    for chunk in chunks:
+        if hasattr(chunk, 'metadata'):
+            chunk.metadata['original_filename'] = original_filename
+        else:
+            chunk.metadata = {'original_filename': original_filename}
+    
     return chunks
 #create vector store
 def create_vector_store(request_id,chunks):
@@ -76,7 +85,8 @@ def main():
         pages = loader.load_and_split()
         st.write(f"Loaded {len(pages)} pages")
         #Split the text into chunks using the split_text function
-        chunks = split_text(pages,1000,200)
+        original_filename = uploaded_file.name
+        chunks = split_text(pages, 1000, 200, original_filename)
         st.write(f"Splitting the text into chunks. Splitted Documents length: {len(chunks)}")
         st.write("--------------------------------")
         st.write(chunks[0])

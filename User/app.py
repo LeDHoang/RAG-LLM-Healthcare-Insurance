@@ -66,11 +66,19 @@ def _build_context_sections(docs):
     """Format retrieved docs into numbered sections with source hints for citations."""
     sections = []
     for idx, doc in enumerate(docs, start=1):
-        source = doc.metadata.get('source', 'unknown') if hasattr(doc, 'metadata') else 'unknown'
-        page = doc.metadata.get('page', 'unknown') if hasattr(doc, 'metadata') else 'unknown'
+        metadata = getattr(doc, 'metadata', {})
+        
+        # Get original filename or fallback to source path
+        original_filename = metadata.get('original_filename', metadata.get('source', 'unknown'))
+        page = metadata.get('page', 'unknown')
+        
+        # Clean up source display
+        if original_filename != 'unknown' and '/' in str(original_filename):
+            original_filename = str(original_filename).split('/')[-1]  # Get just filename
+        
         content = (doc.page_content or '').strip()
         sections.append(
-            f"[S{idx}]\n{content}\n(Source: {source}, page {page})"
+            f"[S{idx}]\n{content}\n(Source: {original_filename}, page {page})"
         )
     return "\n\n".join(sections)
 
@@ -106,6 +114,26 @@ def _build_converse_messages(question, docs):
         }
     ]
 
+def _extract_sources_from_docs(docs):
+    """Extract source information from retrieved documents"""
+    sources = []
+    for idx, doc in enumerate(docs, start=1):
+        metadata = getattr(doc, 'metadata', {})
+        original_filename = metadata.get('original_filename', metadata.get('source', 'unknown'))
+        page = metadata.get('page', 'unknown')
+        
+        # Clean up source display
+        if original_filename != 'unknown' and '/' in str(original_filename):
+            original_filename = str(original_filename).split('/')[-1]
+            
+        sources.append({
+            'id': f'S{idx}',
+            'filename': original_filename,
+            'page': page,
+            'content_preview': (doc.page_content or '')[:150] + '...' if len(doc.page_content or '') > 150 else doc.page_content or ''
+        })
+    return sources
+
 def query_documents(question, vector_store, bedrock_client):
     """Query the documents using RAG"""
     try:
@@ -113,7 +141,10 @@ def query_documents(question, vector_store, bedrock_client):
         docs = vector_store.similarity_search(question, k=3)
         
         if not docs:
-            return "No relevant documents found."
+            return "No relevant documents found.", []
+        
+        # Extract source information for later display
+        sources = _extract_sources_from_docs(docs)
         
         # Build safety-guided messages for Nova Lite
         messages = _build_converse_messages(question, docs)
@@ -131,18 +162,19 @@ def query_documents(question, vector_store, bedrock_client):
             
             # Extract the response text
             if 'output' in response and 'message' in response['output']:
-                return response['output']['message']['content'][0]['text']
+                answer = response['output']['message']['content'][0]['text']
+                return answer, sources
             else:
-                return "Unable to generate response from Nova Lite."
+                return "Unable to generate response from Nova Lite.", []
                 
         except AttributeError as e:
-            return f"Error: Converse API not available. Please restart the application. Details: {str(e)}"
+            return f"Error: Converse API not available. Please restart the application. Details: {str(e)}", []
         except Exception as e:
             # Fallback error message
-            return f"Error with Nova Lite generation: {str(e)}"
+            return f"Error with Nova Lite generation: {str(e)}", []
             
     except Exception as e:
-        return f"Error querying documents: {str(e)}"
+        return f"Error querying documents: {str(e)}", []
 
 def main():
     st.title("Healthcare Insurance RAG Assistant")
@@ -176,10 +208,19 @@ def main():
     
     if st.button("Ask Question") and question:
         with st.spinner("Searching documents and generating answer..."):
-            answer = query_documents(question, vector_store, bedrock_llm)
+            answer, sources = query_documents(question, vector_store, bedrock_llm)
             
             st.subheader("Answer:")
             st.write(answer)
+            
+            # Display source information if available
+            if sources:
+                st.subheader("📚 Sources:")
+                for source in sources:
+                    with st.expander(f"{source['id']}: {source['filename']} (Page {source['page']})"):
+                        st.write("**Content Preview:**")
+                        st.write(f"_{source['content_preview']}_")
+                        st.write(f"**Full Reference:** {source['filename']}, Page {source['page']}")
     
     # Example questions
     with st.expander("Example Questions"):
