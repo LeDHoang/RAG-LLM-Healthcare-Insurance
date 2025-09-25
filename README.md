@@ -69,10 +69,12 @@ streamlit run Admin/admin.py --server.port 8501
 **🌐 Open:** http://localhost:8501
 
 **Features:**
-- Upload healthcare insurance PDFs
+- **📄 Single File Upload**: Upload individual PDF files for processing
+- **📚 Bulk Processing**: Process all PDF files in `pdf-sources` folder automatically
 - Automatic text extraction and chunking
 - Generate embeddings using Titan V2
-- Store vector indexes in S3
+- Store vector indexes in S3 with unique naming
+- Real-time progress tracking and detailed results
 
 ### User Interface - Interactive Q&A
 ```bash
@@ -118,7 +120,22 @@ python3 tests/test_complete_system.py
    - "What is a deductible?"
    - "What services are covered under preventive care?"
    - "How does copayment work?"
-4. **Check S3**: Verify `my_faiss.faiss` and `my_faiss.pkl` files uploaded
+4. **Check S3**: Verify vector store files uploaded to S3
+
+### 📚 Bulk Processing Feature
+Process all PDF files at once using the admin interface:
+
+1. **Open Admin Interface**: http://localhost:8501
+2. **Navigate to "Bulk Process All PDFs" tab**
+3. **Review the list** of PDF files in `pdf-sources/` folder
+4. **Click "Start Bulk Processing"** to process all files automatically
+5. **Monitor progress** with real-time updates and progress bar
+6. **Review results** with detailed processing statistics
+
+**Alternative: Command Line Demo**
+```bash
+python3 demo_bulk_processing.py
+```
 
 ## 📁 Project Structure
 
@@ -138,11 +155,13 @@ RAG-LLM-Healthcare-Insurance/
 │   ├── test_boto3.py            # Boto3 configuration test
 │   ├── test_admin_embedding.py  # Admin interface test
 │   ├── test_user_interface.py   # User interface test
+│   ├── test_bulk_processing.py  # Bulk PDF processing test
 │   ├── test_complete_system.py  # End-to-end system test
 │   └── README.md                # Test documentation
 ├── pdf-sources/             # 📚 Sample healthcare insurance PDFs
 ├── run_tests.py            # 🏃 Test runner script
 ├── run_tests.sh            # 🐚 Shell script for tests
+├── demo_bulk_processing.py # 🔄 Bulk processing demo script
 ├── main.py                 # 🚀 Application entry point
 ├── .env                    # 🔐 Environment configuration
 ├── .gitignore             # 🚫 Git ignore rules

@@ -14,6 +14,7 @@ This directory contains all test files for the RAG-LLM Healthcare Insurance proj
 - `test_nova_converse.py` - Tests Amazon Nova model conversation capabilities
 - `test_admin_embedding.py` - Tests admin interface embedding functionality
 - `test_user_interface.py` - Tests user interface configuration and setup
+- `test_bulk_processing.py` - Tests bulk PDF processing functionality for admin interface
 
 ### Integration Tests
 - `test_complete_system.py` - End-to-end test of the entire RAG system

@@ -81,6 +81,7 @@ def main():
         "test_boto3.py",
         "test_admin_embedding.py",
         "test_user_interface.py",
+        "test_bulk_processing.py",
         "test_complete_system.py"
     ]
     
