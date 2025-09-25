@@ -22,14 +22,13 @@ def initialize_bedrock():
         )
         
         bedrock_embeddings = BedrockEmbeddings(
-            model_id="amazon.titan-embed-text-v2", 
+            model_id="amazon.titan-embed-text-v2:0", 
             client=bedrock_client
         )
         
-        bedrock_llm = Bedrock(
-            model_id="amazon.nova-lite",
-            client=bedrock_client
-        )
+        # Use cross-region inference profile for Nova Lite
+        # Note: Nova Lite requires the Converse API, so we'll handle it manually in query_documents
+        bedrock_llm = bedrock_client  # We'll use the client directly for Nova Lite
         
         return bedrock_embeddings, bedrock_llm
     except Exception as e:
@@ -63,7 +62,7 @@ def load_vector_store():
         st.error(f"Failed to load vector store: {str(e)}")
         return None
 
-def query_documents(question, vector_store, llm):
+def query_documents(question, vector_store, bedrock_client):
     """Query the documents using RAG"""
     try:
         # Search for relevant documents
@@ -75,7 +74,7 @@ def query_documents(question, vector_store, llm):
         # Combine document content
         context = "\n\n".join([doc.page_content for doc in docs])
         
-        # Create prompt
+        # Create prompt for Nova Lite
         prompt = f"""Based on the following healthcare insurance documents, please answer the question.
 
 Context:
@@ -85,9 +84,34 @@ Question: {question}
 
 Answer:"""
         
-        # Generate response
-        response = llm(prompt)
-        return response
+        # Use Converse API for Nova Lite
+        try:
+            response = bedrock_client.converse(
+                modelId="us.amazon.nova-lite-v1:0",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [{"text": prompt}]
+                    }
+                ],
+                inferenceConfig={
+                    "maxTokens": 512,
+                    "temperature": 0.7
+                }
+            )
+            
+            # Extract the response text
+            if 'output' in response and 'message' in response['output']:
+                return response['output']['message']['content'][0]['text']
+            else:
+                return "Unable to generate response from Nova Lite."
+                
+        except AttributeError as e:
+            return f"Error: Converse API not available. Please restart the application. Details: {str(e)}"
+        except Exception as e:
+            # Fallback error message
+            return f"Error with Nova Lite generation: {str(e)}"
+            
     except Exception as e:
         return f"Error querying documents: {str(e)}"
 

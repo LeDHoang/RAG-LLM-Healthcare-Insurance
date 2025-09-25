@@ -32,9 +32,9 @@ from langchain_community.document_loaders import PyPDFLoader
 
 bedrock_client = boto3.client(
     service_name="bedrock-runtime",
-    region_name="us-east-1"
-                              )
-bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v2", client=bedrock_client)
+    region_name=region
+)
+bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v2:0", client=bedrock_client)
 def split_text(text,chunk_size,chunk_overlap):
     splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunks = splitter.split_documents(text)
