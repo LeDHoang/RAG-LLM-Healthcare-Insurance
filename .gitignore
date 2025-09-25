@@ -9,6 +9,10 @@ __pycache__/
 venv/
 env/
 
+# Ignore access key files
+*.csv
+RAG-LLM_accessKeys.csv
+
 # Ignore other common files
 *.log
 *.sqlite3
