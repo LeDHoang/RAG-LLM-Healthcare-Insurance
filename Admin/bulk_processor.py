@@ -4,6 +4,7 @@ Handles bulk processing of multiple PDF files with progress tracking and result 
 """
 
 import time
+import uuid
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -77,6 +78,8 @@ class BulkProcessor:
         
         # Initialize log content
         log_messages = []
+        # Generate unique session ID for this processing session
+        session_id = str(uuid.uuid4())[:8]
         
         def update_progress(message: str):
             """Update progress display and log."""
@@ -87,13 +90,15 @@ class BulkProcessor:
                 log_messages.pop(0)
             
             # Update scrollable log with latest messages
+            # Use timestamp + session to ensure unique keys
+            unique_key = f"log_area_{session_id}_{int(time.time() * 1000) % 10000}"
             with log_placeholder.container():
                 st.text_area(
                     "Real-time Processing Updates", 
                     value="\n".join(log_messages),
                     height=300,
                     disabled=True,
-                    key=f"log_area_{len(log_messages)}"
+                    key=unique_key
                 )
         
         results = []

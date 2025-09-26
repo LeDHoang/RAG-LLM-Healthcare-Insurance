@@ -348,6 +348,7 @@ def main():
     with st.expander("💡 Example Questions"):
         st.write("""
         **General Questions:**
+        - Explain what is the difference between AI/AN limited cost sharing  and Zero Cost Sharing coverage?
         - What is a deductible?
         - What services are covered under preventive care?
         - How does copayment work?
