@@ -8,10 +8,10 @@ An intelligent healthcare insurance document assistant powered by **Amazon Bedro
 ## Demo Videos
 
 ### 🔍 Data Query Interface
-![Data Query Demo](DataQuery.gif)
+![DataQuery](https://github.com/user-attachments/assets/198dc793-28e2-4541-9501-2ba00d27206d)
 
 ### 📚 Batch Processing Feature  
-![Batch Processing Demo](BatchProcessing.gif)
+![BatchProcessing_small](https://github.com/user-attachments/assets/3236d685-f939-4a7e-a6c0-92bfba17697c)
 ## ✨ Features
 
 - **📄 Smart PDF Processing**: Upload healthcare insurance documents via intuitive Streamlit interface
