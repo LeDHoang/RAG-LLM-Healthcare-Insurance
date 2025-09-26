@@ -5,7 +5,9 @@
 An intelligent healthcare insurance document assistant powered by **Amazon Bedrock** and **Retrieval-Augmented Generation (RAG)**. This application allows you to upload complex healthcare insurance PDFs and get instant, accurate answers to your questions using state-of-the-art AI models.
 
 **Transform your healthcare insurance documents into an interactive knowledge base!** 🚀
-
+## Demo Videos
+- **Rage Enabled Query:
+- **Batch Chunking/File upload
 ## ✨ Features
 
 - **📄 Smart PDF Processing**: Upload healthcare insurance documents via intuitive Streamlit interface
