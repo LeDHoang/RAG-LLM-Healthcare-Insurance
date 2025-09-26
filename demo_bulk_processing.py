@@ -20,12 +20,18 @@ def main():
     print("=" * 60)
     
     try:
-        from admin import bulk_process_pdfs, process_pdf_file
-        print("✅ Successfully imported processing functions")
-    except ImportError as e:
-        print(f"❌ Failed to import functions: {e}")
-        print("Make sure you're running this from the project root directory.")
-        return False
+        # Try importing from the new modular structure first
+        from Admin.compatibility import process_pdf_file, bulk_process_pdfs
+        print("✅ Successfully imported processing functions (modular)")
+    except ImportError:
+        try:
+            # Fallback to direct import from Admin
+            from admin import bulk_process_pdfs, process_pdf_file
+            print("✅ Successfully imported processing functions (original)")
+        except ImportError as e:
+            print(f"❌ Failed to import functions: {e}")
+            print("Make sure you're running this from the project root directory.")
+            return False
     
     # Check PDF sources
     pdf_sources_path = project_root / "pdf-sources"
@@ -43,7 +49,10 @@ def main():
     
     # Check existing files in S3
     print("\n🔍 Checking for existing files in S3...")
-    from admin import get_existing_s3_files, check_pdf_already_processed
+    try:
+        from Admin.compatibility import get_existing_s3_files, check_pdf_already_processed
+    except ImportError:
+        from admin import get_existing_s3_files, check_pdf_already_processed
     
     existing_s3_files = get_existing_s3_files()
     print(f"Found {len(existing_s3_files)} existing files in S3 bucket")

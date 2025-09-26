@@ -141,10 +141,17 @@ python3 demo_bulk_processing.py
 
 ```
 RAG-LLM-Healthcare-Insurance/
-├── Admin/
-│   ├── admin.py              # 📄 Document processing interface
+├── Admin/                   # 🏗️ Modular admin architecture
+│   ├── admin.py              # 📄 Main admin interface entry point
+│   ├── config.py             # ⚙️ Configuration and AWS client management
+│   ├── s3_operations.py      # ☁️ Amazon S3 file operations
+│   ├── pdf_processor.py      # 📚 PDF processing and vector stores
+│   ├── bulk_processor.py     # 🔄 Bulk processing coordination
+│   ├── ui_components.py      # 🎨 Streamlit UI components
+│   ├── compatibility.py      # 🔗 Backward compatibility layer
 │   ├── requirements.txt      # 📦 Python dependencies
-│   └── Dockerfile           # 🐳 Container configuration
+│   ├── Dockerfile           # 🐳 Container configuration
+│   └── README.md            # 📖 Architecture documentation
 ├── User/
 │   └── app.py               # 💬 Question-answering interface
 ├── tests/                   # 🧪 Test suite
@@ -170,6 +177,16 @@ RAG-LLM-Healthcare-Insurance/
 
 ## 🔧 Technical Architecture
 
+### 🏗️ Modular Design (v2.0)
+The application follows a clean, modular architecture with separation of concerns:
+
+- **Configuration Layer** (`config.py`): Centralized AWS client management
+- **Storage Layer** (`s3_operations.py`): S3 file operations and duplicate checking
+- **Processing Layer** (`pdf_processor.py`): PDF text extraction and vector creation
+- **Orchestration Layer** (`bulk_processor.py`): Bulk processing coordination
+- **Presentation Layer** (`ui_components.py`): Streamlit UI components
+- **Compatibility Layer** (`compatibility.py`): Backward compatibility support
+
 ### AI Models Used
 - **Amazon Titan Text Embeddings V2** (`amazon.titan-embed-text-v2:0`)
   - Generates 1024-dimensional embeddings
@@ -185,6 +202,7 @@ RAG-LLM-Healthcare-Insurance/
 - **FAISS**: Vector similarity search
 - **Amazon S3**: Cloud storage for indexes
 - **Amazon Bedrock**: AI model inference
+- **Modular Python Architecture**: Clean separation of concerns
 
 ## 🤝 Contributing
 

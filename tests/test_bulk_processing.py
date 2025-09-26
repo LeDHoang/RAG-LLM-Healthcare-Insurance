@@ -15,11 +15,17 @@ sys.path.append(str(project_root))
 sys.path.append(str(project_root / "Admin"))
 
 try:
-    from Admin.admin import process_pdf_file, bulk_process_pdfs, check_s3_file_exists, check_pdf_already_processed, get_existing_s3_files
-    print("✅ Successfully imported bulk processing functions")
-except ImportError as e:
-    print(f"❌ Failed to import functions: {e}")
-    sys.exit(1)
+    # Try importing from the new modular structure first
+    from Admin.compatibility import process_pdf_file, bulk_process_pdfs, check_s3_file_exists, check_pdf_already_processed, get_existing_s3_files
+    print("✅ Successfully imported bulk processing functions (modular)")
+except ImportError:
+    try:
+        # Fallback to original admin.py import
+        from Admin.admin_original import process_pdf_file, bulk_process_pdfs, check_s3_file_exists, check_pdf_already_processed, get_existing_s3_files
+        print("✅ Successfully imported bulk processing functions (original)")
+    except ImportError as e:
+        print(f"❌ Failed to import functions: {e}")
+        sys.exit(1)
 
 def test_pdf_sources_availability():
     """Test if PDF files are available in pdf-sources folder"""
